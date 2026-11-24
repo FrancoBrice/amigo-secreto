@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amigo Secreto Familia</title>
+<style>
+  :root { color-scheme: light; --bg:#fbf7f2; --ink:#2b2b2b; --muted:#6b6b6b; --red:#b3261e; --green:#1f6f43; --card:#fff; --line:#e7e0d6; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); }
+  main { max-width:640px; margin:0 auto; padding:28px 18px 60px; }
+  h1 { font-size:28px; margin:0 0 6px; }
+  p { line-height:1.5; }
+  .muted { color:var(--muted); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; margin:16px 0; }
+  label { font-weight:600; display:block; margin:12px 0 6px; }
+  textarea, input { width:100%; font:inherit; font-size:16px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); }
+  textarea { min-height:150px; }
+  .row { display:flex; gap:10px; }
+  .row > div { flex:1; min-width:0; }
+  button, .btn { font:inherit; font-size:16px; font-weight:600; border:0; border-radius:10px; padding:12px 16px; cursor:pointer; text-decoration:none; display:inline-block; text-align:center; }
+  .primary { background:var(--red); color:#fff; width:100%; font-size:18px; padding:14px; margin-top:16px; }
+  .wa { background:#25a35a; color:#fff; }
+  .ghost { background:#f1ece4; color:var(--ink); }
+  .person { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 0; border-top:1px solid var(--line); }
+  .person:first-child { border-top:0; }
+  .person .name { font-weight:600; font-size:17px; }
+  .person .actions { display:flex; gap:8px; flex-shrink:0; }
+  .sent { color:var(--green); font-size:14px; }
+  .err { color:var(--red); font-weight:600; }
+  .warn { background:#fff5e0; border:1px solid #f0d9a8; border-radius:10px; padding:12px 14px; }
+  /* Vista del participante */
+  .reveal { text-align:center; padding-top:40px; }
+  .reveal .hola { font-size:30px; margin:0; }
+  .reveal .sub { font-size:22px; margin:28px 0 10px; color:var(--muted); }
+  .reveal .target { font-size:52px; font-weight:800; color:var(--red); margin:0 0 28px; word-break:break-word; }
+  .reveal .gift { font-size:64px; }
+  .hidden { display:none; }
+  .tapbox { margin:30px auto; max-width:360px; }
+  .tapbox button { width:100%; font-size:22px; padding:20px; }
+  .details { font-size:20px; line-height:1.6; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+
+<script>
+(function () {
+  const app = document.getElementById('app');
+  const PREFIX = 'as';
+
+  // ---------- codificación (oculta los nombres en el link) ----------
+  function enc(obj) {
+    const bytes = new TextEncoder().encode(JSON.stringify(obj));
+    const key = crypto.getRandomValues(new Uint8Array(6));
+    let hex = '';
+    key.forEach(b => hex += b.toString(16).padStart(2, '0'));
+    bytes.forEach((b, i) => hex += (b ^ key[i % key.length] ^ ((i * 37) & 255)).toString(16).padStart(2, '0'));
+    return PREFIX + hex;
+  }
+  function dec(s) {
+    if (!s || s.indexOf(PREFIX) !== 0) return null;
+    const hex = s.slice(PREFIX.length);
+    if (!/^[0-9a-f]+$/.test(hex) || hex.length < 14) return null;
+    const all = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < all.length; i++) all[i] = parseInt(hex.substr(i * 2, 2), 16);
+    const key = all.slice(0, 6), data = all.slice(6);
+    const out = data.map((b, i) => b ^ key[i % key.length] ^ ((i * 37) & 255));
+    try { return JSON.parse(new TextDecoder().decode(out)); } catch (e) { return null; }
+  }
+  function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // ---------- vista del participante ----------
+  function showReveal(d) {
+    app.innerHTML = `
+      <div class="reveal">
+        <div class="gift" aria-hidden="true">🎁</div>
+        <p class="hola">Hola, ${esc(d.g)}</p>
+        <p class="muted" style="font-size:19px">Este es tu Amigo Secreto. No se lo muestres a nadie.</p>
+        <div class="tapbox" id="tapbox"><button class="primary" id="ver">Ver a quién me tocó</button></div>
+        <div id="res" class="hidden">
+          <p class="sub">Te tocó regalarle a:</p>
+          <p class="target">${esc(d.r)}</p>
+          ${d.p || d.f ? `<div class="card details">${d.p ? `<div><b>Presupuesto:</b> ${esc(d.p)}</div>` : ''}${d.f ? `<div><b>Fecha:</b> ${esc(d.f)}</div>` : ''}</div>` : ''}
+        </div>
+      </div>`;
+    document.getElementById('ver').onclick = () => {
+      document.getElementById('tapbox').classList.add('hidden');
+      document.getElementById('res').classList.remove('hidden');
+    };
+  }
+
+  // ---------- sorteo ----------
+  function parseHouses(text) {
+    return text.split('\n').map(l => l.split(/[,;]+/).map(n => n.trim()).filter(Boolean)).filter(h => h.length);
+  }
+  function draw(houses) {
+    const people = [], house = {};
+    houses.forEach((h, i) => h.forEach(n => { people.push(n); house[n] = i; }));
+    for (let t = 0; t < 5000; t++) {
+      const r = people.slice();
+      for (let i = r.length - 1; i > 0; i--) {
+        const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1);
+        [r[i], r[j]] = [r[j], r[i]];
+      }
+      if (people.every((p, i) => house[p] !== house[r[i]])) return people.map((p, i) => [p, r[i]]);
+    }
+    return null;
+  }
+
+  // ---------- vista del organizador ----------
+  const DEFAULT = 'Kena, Tomás, Manuel\nMeme, Tata\nFranco, Ana, Rodrigo\nVero, Diego\nFeli, Vale';
+
+  function showOrganizer() {
+    app.innerHTML = `
+      <h1>Amigo Secreto Familia</h1>
+      <p class="muted">Sorteo donde a nadie le toca alguien de su misma casa. Nadie, ni siquiera quien organiza, ve el resultado completo.</p>
+      <div class="card">
+        <label for="houses">Casas (una por línea, nombres separados por coma)</label>
+        <textarea id="houses">${esc(DEFAULT)}</textarea>
+        <div class="row">
+          <div><label for="budget">Presupuesto (opcional)</label><input id="budget" placeholder="Ej: $20.000"></div>
+          <div><label for="date">Fecha (opcional)</label><input id="date" placeholder="Ej: 24 de diciembre"></div>
+        </div>
+        <button class="primary" id="go">Sortear</button>
+        <p id="msg" class="err"></p>
+      </div>
+      <div id="out"></div>`;
+    document.getElementById('go').onclick = run;
+  }
+
+  function run() {
+    const houses = parseHouses(document.getElementById('houses').value);
+    const msg = document.getElementById('msg');
+    msg.textContent = '';
+    const names = houses.flat();
+    if (names.length < 3) { msg.textContent = 'Se necesitan al menos 3 personas.'; return; }
+    if (new Set(names.map(n => n.toLowerCase())).size !== names.length) { msg.textContent = 'Hay nombres repetidos. Agrega una inicial para diferenciarlos.'; return; }
+    const pairs = draw(houses);
+    if (!pairs) { msg.textContent = 'No se puede sortear con estas casas (una casa tiene más de la mitad de las personas).'; return; }
+    const p = document.getElementById('budget').value.trim();
+    const f = document.getElementById('date').value.trim();
+    const base = location.href.split('#')[0];
+
+    const out = document.getElementById('out');
+    out.innerHTML = `
+      <div class="card">
+        <div class="warn"><b>Listo. No vuelvas a sortear.</b> Manda a cada persona su propio link (no abras los de otros, o verás su resultado). Si recargas la página, el sorteo se pierde y tendrías que mandar todos los links de nuevo.</div>
+        <div id="list" style="margin-top:10px"></div>
+      </div>`;
+    document.getElementById('houses').disabled = true;
+    document.getElementById('go').disabled = true;
+    document.getElementById('go').textContent = 'Sorteo hecho';
+    document.getElementById('go').style.opacity = .5;
+
+    const list = document.getElementById('list');
+    pairs.forEach(([g, r]) => {
+      const link = base + '#' + enc({ g, r, p, f });
+      const text = `Hola ${g}! Este es tu link del Amigo Secreto de la familia. Ábrelo para ver a quién te tocó (es solo para ti):\n${link}`;
+      const row = document.createElement('div');
+      row.className = 'person';
+      row.innerHTML = `<span class="name">${esc(g)}</span>
+        <span class="actions">
+          <a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(text)}">WhatsApp</a>
+          <button class="btn ghost">Copiar</button>
+        </span>`;
+      const mark = () => { if (!row.querySelector('.sent')) row.querySelector('.name').insertAdjacentHTML('afterend', ' <span class="sent">enviado</span>'); };
+      row.querySelector('.wa').addEventListener('click', mark);
+      row.querySelector('.ghost').onclick = async (e) => {
+        try { await navigator.clipboard.writeText(text); e.target.textContent = 'Copiado'; mark(); }
+        catch (err) { e.target.textContent = 'No se pudo'; }
+      };
+      list.appendChild(row);
+    });
+  }
+
+  function route() {
+    const d = dec(location.hash.slice(1));
+    if (d && d.g && d.r) showReveal(d); else showOrganizer();
+  }
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>
