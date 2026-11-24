@@ -129,6 +129,8 @@
       </div>
       <div id="out"></div>`;
     document.getElementById('go').onclick = run;
+    const saved = store.load();
+    if (saved && saved.entries && saved.entries.length) renderResults(saved);
   }
 
   function run() {
@@ -151,22 +153,47 @@
     const f = document.getElementById('date').value.trim();
     const base = location.href.split('#')[0];
 
+    const entries = pairs.map(([g, r]) => ({ g, text: `Hola ${g}! Este es tu link del Amigo Secreto de la familia. Ábrelo para ver a quién te tocó (es solo para ti):\n${base}#${enc({ g, r, p, f })}` }));
+    const saved = { entries, n: names.length, houses: document.getElementById('houses').value, sent: {} };
+    store.save(saved);
+    renderResults(saved);
+  }
+
+  // ---------- guardado en este navegador ----------
+  const KEY = 'amigoSecretoFamilia_v1';
+  const store = {
+    load() { try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; } },
+    save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} },
+    clear() { try { localStorage.removeItem(KEY); } catch (e) {} }
+  };
+
+  function renderResults(saved) {
+    const n = saved.n;
+    document.getElementById('houses').value = saved.houses;
+    document.getElementById('houses').disabled = true;
+    ['budget', 'date'].forEach(id => document.getElementById(id).disabled = true);
+    const go = document.getElementById('go');
+    go.disabled = true; go.textContent = 'Sorteo hecho'; go.style.opacity = .5;
+
     const out = document.getElementById('out');
     out.innerHTML = `
       <div class="card">
-        <div class="warn"><b>Listo. No vuelvas a sortear.</b> Manda a cada persona su propio link (no abras los de otros, o verás su resultado). Si recargas la página, el sorteo se pierde y tendrías que mandar todos los links de nuevo.</div>
-        <div class="ok">Sorteo revisado automáticamente:<br>✓ Las ${names.length} personas regalan una vez<br>✓ Las ${names.length} personas reciben exactamente un regalo (nadie queda sin regalo)<br>✓ A nadie le tocó alguien de su misma casa ni sí mismo</div>
+        <div class="warn"><b>Listo. No vuelvas a sortear.</b> Manda a cada persona su propio link y no abras los de otros, porque verías su resultado. El sorteo queda guardado en este navegador: si recargas la página, vuelve a aparecer igual.</div>
+        <div class="ok">Sorteo revisado automáticamente:<br>✓ Las ${n} personas regalan una vez<br>✓ Las ${n} personas reciben exactamente un regalo (nadie queda sin regalo)<br>✓ A nadie le tocó alguien de su misma casa ni sí mismo</div>
         <div id="list" style="margin-top:10px"></div>
+        <button class="btn ghost" id="copyall" style="width:100%;margin-top:12px">Copiar todos los links (para respaldo)</button>
+        <p class="muted" style="font-size:14px;margin:8px 0 0">Pégalos en tus notas como respaldo. Los links no muestran a quién le toca a cada uno, solo para quién es.</p>
+        <div style="margin-top:22px;border-top:1px solid var(--line);padding-top:14px">
+          <button class="btn ghost" id="reset" style="width:100%">Hacer un sorteo nuevo</button>
+          <div id="confirm" class="hidden warn" style="margin-top:10px">
+            ¿Seguro? Se borra este sorteo y tendrías que mandar todos los links de nuevo. Los links que ya mandaste quedarían mezclados con el sorteo nuevo.
+            <div class="row" style="margin-top:10px"><div><button class="btn primary" id="yes" style="margin:0">Sí, borrar</button></div><div><button class="btn ghost" id="no" style="width:100%">Cancelar</button></div></div>
+          </div>
+        </div>
       </div>`;
-    document.getElementById('houses').disabled = true;
-    document.getElementById('go').disabled = true;
-    document.getElementById('go').textContent = 'Sorteo hecho';
-    document.getElementById('go').style.opacity = .5;
 
     const list = document.getElementById('list');
-    pairs.forEach(([g, r]) => {
-      const link = base + '#' + enc({ g, r, p, f });
-      const text = `Hola ${g}! Este es tu link del Amigo Secreto de la familia. Ábrelo para ver a quién te tocó (es solo para ti):\n${link}`;
+    saved.entries.forEach(({ g, text }) => {
       const row = document.createElement('div');
       row.className = 'person';
       row.innerHTML = `<span class="name">${esc(g)}</span>
@@ -174,7 +201,11 @@
           <a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(text)}">WhatsApp</a>
           <button class="btn ghost">Copiar</button>
         </span>`;
-      const mark = () => { if (!row.querySelector('.sent')) row.querySelector('.name').insertAdjacentHTML('afterend', ' <span class="sent">enviado</span>'); };
+      const mark = () => {
+        if (!row.querySelector('.sent')) row.querySelector('.name').insertAdjacentHTML('beforeend', ' <span class="sent">enviado</span>');
+        saved.sent = saved.sent || {}; saved.sent[g] = true; store.save(saved);
+      };
+      if (saved.sent && saved.sent[g]) row.querySelector('.name').insertAdjacentHTML('beforeend', ' <span class="sent">enviado</span>');
       row.querySelector('.wa').addEventListener('click', mark);
       row.querySelector('.ghost').onclick = async (e) => {
         try { await navigator.clipboard.writeText(text); e.target.textContent = 'Copiado'; mark(); }
@@ -182,6 +213,15 @@
       };
       list.appendChild(row);
     });
+
+    document.getElementById('copyall').onclick = async (e) => {
+      const all = 'Amigo Secreto Familia - links (no abrir los de otros)\n\n' + saved.entries.map(x => x.text).join('\n\n');
+      try { await navigator.clipboard.writeText(all); e.target.textContent = 'Copiados los ' + n + ' links'; }
+      catch (err) { e.target.textContent = 'No se pudo copiar'; }
+    };
+    document.getElementById('reset').onclick = () => document.getElementById('confirm').classList.remove('hidden');
+    document.getElementById('no').onclick = () => document.getElementById('confirm').classList.add('hidden');
+    document.getElementById('yes').onclick = () => { store.clear(); showOrganizer(); };
   }
 
   function route() {
