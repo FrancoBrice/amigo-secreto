@@ -43,20 +43,20 @@
   .details { font-size:20px; line-height:1.6; }
 
   /* ---------- Escena navideña ---------- */
-  body { background: linear-gradient(180deg, #0b1a33 0%, #16325c 55%, #2a4f80 100%) fixed; min-height:100vh; }
+  body { background: radial-gradient(ellipse at 50% 0%, #e2323b 0%, #b5121b 45%, #7d0a12 100%) fixed, #9e1019; min-height:100vh; }
   main { position:relative; z-index:2; padding-bottom:170px; }
-  .intro h1 { color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.35); }
-  .intro p { color:#dbe6f5; text-shadow:0 1px 6px rgba(0,0,0,.5); }
+  .intro h1 { color:#fff; text-shadow:0 0 16px rgba(255,210,90,.6), 0 2px 8px rgba(0,0,0,.35); }
+  .intro p { color:#fff3e6; text-shadow:0 1px 6px rgba(0,0,0,.5); }
   #snow { position:fixed; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; }
   .scene { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
-  .moon { position:absolute; top:6vh; right:8vw; width:90px; height:90px; border-radius:50%;
-          background: radial-gradient(circle at 35% 35%, #fffbe8, #f3e6b5 70%); box-shadow:0 0 60px 18px rgba(255,244,200,.25); }
+  .moon { position:absolute; top:7vh; right:8vw; width:90px; height:90px;
+          background:none; filter: drop-shadow(0 0 18px rgba(255,220,90,.9)); animation: twinkle 2.6s ease-in-out infinite; }
   .star { position:absolute; width:3px; height:3px; border-radius:50%; background:#fff; animation: twinkle 3s ease-in-out infinite; }
   @keyframes twinkle { 0%,100% { opacity:.25 } 50% { opacity:1 } }
   .ground { position:absolute; left:0; right:0; bottom:0; height:150px; }
   .ground svg { width:100%; height:100%; display:block; }
   .sleigh { position:absolute; top:calc(100vh - 235px); left:0; width:230px; animation: fly 26s linear infinite; animation-delay:2s; transform:translateX(-300px); }
-  .sleigh .bob { animation: bob 1.6s ease-in-out infinite; }
+  .sleigh .bob { animation: bob 1.6s ease-in-out infinite; filter: drop-shadow(0 0 6px rgba(255,255,255,.85)) drop-shadow(0 0 14px rgba(255,220,120,.5)); }
   @keyframes fly {
     0% { transform: translateX(-300px) translateY(30px) rotate(-4deg); }
     55% { transform: translateX(calc(100vw + 60px)) translateY(-40px) rotate(-4deg); }
@@ -64,17 +64,17 @@
   }
   @keyframes bob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
   .lights { position:fixed; top:0; left:0; right:0; height:34px; z-index:3; pointer-events:none; display:flex; justify-content:space-around; }
-  .lights::before { content:""; position:absolute; top:-14px; left:-2%; right:-2%; height:30px; border-bottom:2px solid #2b3b2b; border-radius:0 0 50% 50% / 0 0 100% 100%; }
+  .lights::before { content:""; position:absolute; top:-14px; left:-2%; right:-2%; height:30px; border-bottom:3px solid #1d6b34; border-radius:0 0 50% 50% / 0 0 100% 100%; }
   .bulb { width:10px; height:15px; border-radius:50% 50% 45% 45%; margin-top:12px; animation: glow 1.4s ease-in-out infinite alternate; }
-  .bulb:nth-child(4n+1) { background:#ff4d4d; color:#ff4d4d; }
-  .bulb:nth-child(4n+2) { background:#ffd84d; color:#ffd84d; animation-delay:.35s; }
-  .bulb:nth-child(4n+3) { background:#4dd06a; color:#4dd06a; animation-delay:.7s; }
-  .bulb:nth-child(4n)   { background:#4db8ff; color:#4db8ff; animation-delay:1.05s; }
+  .bulb:nth-child(4n+1) { background:#ffd23f; color:#ffd23f; }
+  .bulb:nth-child(4n+2) { background:#3ddc6c; color:#3ddc6c; animation-delay:.35s; }
+  .bulb:nth-child(4n+3) { background:#ffffff; color:#ffffff; animation-delay:.7s; }
+  .bulb:nth-child(4n)   { background:#4dc3ff; color:#4dc3ff; animation-delay:1.05s; }
   @keyframes glow { from { opacity:.45; box-shadow:none } to { opacity:1; box-shadow:0 0 12px 3px currentColor } }
-  .reveal-card { background:#fff; border-radius:20px; padding:26px 20px 30px; margin-top:30px; box-shadow:0 12px 40px rgba(0,0,0,.3); }
+  .reveal-card { border-top:8px solid #1f8a46; background:#fff; border-radius:20px; padding:26px 20px 30px; margin-top:30px; box-shadow:0 12px 40px rgba(0,0,0,.3); }
   .pop { animation: pop .6s cubic-bezier(.2,1.6,.4,1) both; }
   @keyframes pop { from { transform:scale(.3); opacity:0 } to { transform:scale(1); opacity:1 } }
-  .card { box-shadow:0 10px 30px rgba(0,0,0,.25); }
+  .card { box-shadow:0 10px 30px rgba(0,0,0,.5); border-top:6px solid #1f8a46; }
   @media (prefers-reduced-motion: reduce) {
     .sleigh, .sleigh .bob, .star, .bulb, .pop { animation:none !important; }
     .sleigh { display:none; }
@@ -85,12 +85,12 @@
 </head>
 <body>
 <div class="scene" aria-hidden="true">
-  <div class="moon"></div>
+  <div class="moon"><svg viewBox="0 0 100 100"><path d="M50 4 L61 37 L96 37 L68 58 L79 92 L50 71 L21 92 L32 58 L4 37 L39 37 Z" fill="#ffd54a" stroke="#fff0a8" stroke-width="3" stroke-linejoin="round"/></svg></div>
   <div id="stars"></div>
   <div class="sleigh"><div class="bob">
     <svg viewBox="0 0 230 90" xmlns="http://www.w3.org/2000/svg">
       <!-- estela de brillitos -->
-      <g fill="#fff6c8" opacity=".8"><circle cx="222" cy="60" r="1.6"/><circle cx="214" cy="52" r="1.2"/><circle cx="226" cy="46" r="1"/></g>
+      <g fill="#ffd36b"><circle cx="222" cy="62" r="2"><animate attributeName="opacity" values="1;.2;1" dur=".9s" repeatCount="indefinite"/></circle><circle cx="214" cy="52" r="1.5"><animate attributeName="opacity" values=".3;1;.3" dur="1.1s" repeatCount="indefinite"/></circle><circle cx="228" cy="48" r="1.3"><animate attributeName="opacity" values="1;.3;1" dur="1.3s" repeatCount="indefinite"/></circle><circle cx="226" cy="72" r="1.2"><animate attributeName="opacity" values=".2;1;.2" dur=".8s" repeatCount="indefinite"/></circle></g>
       <!-- riendas -->
       <path d="M150 52 Q118 40 92 44 M150 52 Q100 50 44 44" stroke="#c9a25a" stroke-width="1.4" fill="none"/>
       <!-- reno 1 (adelante) -->
@@ -128,15 +128,11 @@
     </svg>
   </div></div>
   <div class="ground">
-    <svg viewBox="0 0 1200 150" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <g fill="#14304f">
-        <path d="M90 95 L110 40 L130 95 Z"/><path d="M95 70 L110 25 L125 70 Z"/>
-        <path d="M980 90 L1004 28 L1028 90 Z"/><path d="M986 62 L1004 14 L1022 62 Z"/>
-        <path d="M1060 98 L1076 55 L1092 98 Z"/>
-        <path d="M200 100 L214 64 L228 100 Z"/>
-      </g>
-      <path d="M0 100 Q150 60 320 95 T660 90 T980 92 T1200 80 L1200 150 L0 150 Z" fill="#e8f0fa"/>
-      <path d="M0 120 Q200 95 420 118 T820 112 T1200 108 L1200 150 L0 150 Z" fill="#ffffff"/>
+    <svg viewBox="0 0 1200 150" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 105 Q150 80 320 102 T660 98 T980 100 T1200 92 L1200 150 L0 150 Z" fill="#17703a"/>
+      <g transform="translate(70,50)"><path d="M0 70 L26.6 70 L0 0 L-26.6 70 Z" fill="#1f8a46"/><rect x="-3" y="70" width="6" height="8" fill="#6b3d1f"/><circle cx="-10.5" cy="38.5" r="2.6" fill="#ffd23f"/><circle cx="9.8" cy="52.5" r="2.6" fill="#ff4d4d"/><circle cx="0" cy="24.5" r="2.4" fill="#4dc3ff"/><circle cx="-15.4" cy="61.6" r="2.4" fill="#fff"/><path d="M0 -7 L2.5 -1 L8 -1 L3.5 2.5 L5 8 L0 4.5 L-5 8 L-3.5 2.5 L-8 -1 L-2.5 -1 Z" fill="#ffd23f"/></g><g transform="translate(130,70)"><path d="M0 50 L19.0 50 L0 0 L-19.0 50 Z" fill="#1f8a46"/><rect x="-3" y="50" width="6" height="8" fill="#6b3d1f"/><circle cx="-7.5" cy="27.500000000000004" r="2.6" fill="#ffd23f"/><circle cx="7.000000000000001" cy="37.5" r="2.6" fill="#ff4d4d"/><circle cx="0" cy="17.5" r="2.4" fill="#4dc3ff"/><circle cx="-11.0" cy="44.0" r="2.4" fill="#fff"/><path d="M0 -7 L2.5 -1 L8 -1 L3.5 2.5 L5 8 L0 4.5 L-5 8 L-3.5 2.5 L-8 -1 L-2.5 -1 Z" fill="#ffd23f"/></g><g transform="translate(1060,45)"><path d="M0 75 L28.5 75 L0 0 L-28.5 75 Z" fill="#1f8a46"/><rect x="-3" y="75" width="6" height="8" fill="#6b3d1f"/><circle cx="-11.25" cy="41.25" r="2.6" fill="#ffd23f"/><circle cx="10.500000000000002" cy="56.25" r="2.6" fill="#ff4d4d"/><circle cx="0" cy="26.25" r="2.4" fill="#4dc3ff"/><circle cx="-16.5" cy="66.0" r="2.4" fill="#fff"/><path d="M0 -7 L2.5 -1 L8 -1 L3.5 2.5 L5 8 L0 4.5 L-5 8 L-3.5 2.5 L-8 -1 L-2.5 -1 Z" fill="#ffd23f"/></g><g transform="translate(1130,68)"><path d="M0 52 L19.76 52 L0 0 L-19.76 52 Z" fill="#1f8a46"/><rect x="-3" y="52" width="6" height="8" fill="#6b3d1f"/><circle cx="-7.8" cy="28.6" r="2.6" fill="#ffd23f"/><circle cx="7.280000000000001" cy="39.0" r="2.6" fill="#ff4d4d"/><circle cx="0" cy="18.2" r="2.4" fill="#4dc3ff"/><circle cx="-11.44" cy="45.76" r="2.4" fill="#fff"/><path d="M0 -7 L2.5 -1 L8 -1 L3.5 2.5 L5 8 L0 4.5 L-5 8 L-3.5 2.5 L-8 -1 L-2.5 -1 Z" fill="#ffd23f"/></g><g transform="translate(560,75)"><path d="M0 45 L17.1 45 L0 0 L-17.1 45 Z" fill="#1f8a46"/><rect x="-3" y="45" width="6" height="8" fill="#6b3d1f"/><circle cx="-6.75" cy="24.750000000000004" r="2.6" fill="#ffd23f"/><circle cx="6.300000000000001" cy="33.75" r="2.6" fill="#ff4d4d"/><circle cx="0" cy="15.749999999999998" r="2.4" fill="#4dc3ff"/><circle cx="-9.9" cy="39.6" r="2.4" fill="#fff"/><path d="M0 -7 L2.5 -1 L8 -1 L3.5 2.5 L5 8 L0 4.5 L-5 8 L-3.5 2.5 L-8 -1 L-2.5 -1 Z" fill="#ffd23f"/></g>
+      <g transform="translate(170,108)"><rect width="20" height="20" fill="#ffd23f"/><rect x="8.0" width="4" height="20" fill="#d92b2b"/><rect y="8.0" width="20" height="4" fill="#d92b2b"/></g><g transform="translate(195,114)"><rect width="14" height="14" fill="#4dc3ff"/><rect x="5.0" width="4" height="14" fill="#fff"/><rect y="5.0" width="14" height="4" fill="#fff"/></g><g transform="translate(1000,110)"><rect width="18" height="18" fill="#fff"/><rect x="7.0" width="4" height="18" fill="#d92b2b"/><rect y="7.0" width="18" height="4" fill="#d92b2b"/></g><g transform="translate(1022,115)"><rect width="13" height="13" fill="#ff4d4d"/><rect x="4.5" width="4" height="13" fill="#ffd23f"/><rect y="4.5" width="13" height="4" fill="#ffd23f"/></g>
+      <path d="M0 125 Q200 108 420 124 T820 120 T1200 116 L1200 150 L0 150 Z" fill="#0f5a2c"/>
     </svg>
   </div>
 </div>
@@ -330,7 +326,7 @@
   route();
 })();
 
-// ---------- nieve y estrellas ----------
+// ---------- chispas y estrellas ----------
 (function () {
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const st = document.getElementById('stars');
@@ -345,14 +341,20 @@
   let W, H, flakes = [];
   function size() { const r = window.devicePixelRatio || 1; W = innerWidth; H = innerHeight; c.width = W * r; c.height = H * r; ctx.setTransform(r, 0, 0, r, 0, 0); }
   size(); addEventListener('resize', size);
-  const N = Math.min(160, Math.round(innerWidth / 6));
-  for (let i = 0; i < N; i++) flakes.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 2.6 + .8, s: Math.random() * .8 + .35, w: Math.random() * 6.28, o: Math.random() * .5 + .5 });
+  const N = Math.min(90, Math.round(innerWidth / 10));
+  const cols = ['255,214,74', '255,255,255', '61,220,108', '255,214,74', '77,195,255'];
+  for (let i = 0; i < N; i++) flakes.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 2 + 1, s: Math.random() * .6 + .3, w: Math.random() * 6.28, t: Math.random() * 6.28, rot: Math.random() * 6.28, c: cols[i % cols.length], star: i % 4 === 0 });
+  function star(x, y, r, rot) { ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.beginPath();
+    for (let k = 0; k < 10; k++) { const rr = k % 2 ? r * .45 : r * 1.6; const a = k * Math.PI / 5; ctx.lineTo(Math.sin(a) * rr, -Math.cos(a) * rr); }
+    ctx.closePath(); ctx.fill(); ctx.restore(); }
   function draw() {
     ctx.clearRect(0, 0, W, H);
     for (const f of flakes) {
-      ctx.globalAlpha = f.o; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.283); ctx.fillStyle = '#fff'; ctx.fill();
-      if (!reduce) { f.y += f.s * (f.r * .6); f.w += .015; f.x += Math.sin(f.w) * .45;
-        if (f.y > H + 5) { f.y = -5; f.x = Math.random() * W; } }
+      const a = .55 + .45 * Math.abs(Math.sin(f.t));
+      ctx.fillStyle = `rgba(${f.c},${a})`;
+      if (f.star) star(f.x, f.y, f.r * 1.4, f.rot); else { ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.283); ctx.fill(); }
+      if (!reduce) { f.y += f.s; f.w += .012; f.t += .04; f.rot += .01; f.x += Math.sin(f.w) * .4;
+        if (f.y > H + 10) { f.y = -10; f.x = Math.random() * W; } }
     }
     if (!reduce) requestAnimationFrame(draw);
   }
