@@ -29,6 +29,7 @@
   .person .actions { display:flex; gap:8px; flex-shrink:0; }
   .sent { color:var(--green); font-size:14px; }
   .err { color:var(--red); font-weight:600; }
+  .ok { background:#e9f6ee; border:1px solid #b9e0c8; color:var(--green); border-radius:10px; padding:12px 14px; margin-top:10px; line-height:1.6; font-weight:600; }
   .warn { background:#fff5e0; border:1px solid #f0d9a8; border-radius:10px; padding:12px 14px; }
   /* Vista del participante */
   .reveal { text-align:center; padding-top:40px; }
@@ -139,6 +140,13 @@
     if (new Set(names.map(n => n.toLowerCase())).size !== names.length) { msg.textContent = 'Hay nombres repetidos. Agrega una inicial para diferenciarlos.'; return; }
     const pairs = draw(houses);
     if (!pairs) { msg.textContent = 'No se puede sortear con estas casas (una casa tiene más de la mitad de las personas).'; return; }
+    // Revisión automática del sorteo (sin mostrar quién le toca a quién)
+    const houseOf = {}; houses.forEach((h, i) => h.forEach(n => houseOf[n] = i));
+    const givers = new Set(pairs.map(x => x[0])), receivers = new Set(pairs.map(x => x[1]));
+    const okAllGive = givers.size === names.length && names.every(n => givers.has(n));
+    const okAllGet = receivers.size === names.length && names.every(n => receivers.has(n));
+    const okHouse = pairs.every(([g, r]) => g !== r && houseOf[g] !== houseOf[r]);
+    if (!(okAllGive && okAllGet && okHouse)) { msg.textContent = 'Algo salió mal en el sorteo. Recarga la página e inténtalo de nuevo.'; return; }
     const p = document.getElementById('budget').value.trim();
     const f = document.getElementById('date').value.trim();
     const base = location.href.split('#')[0];
@@ -147,6 +155,7 @@
     out.innerHTML = `
       <div class="card">
         <div class="warn"><b>Listo. No vuelvas a sortear.</b> Manda a cada persona su propio link (no abras los de otros, o verás su resultado). Si recargas la página, el sorteo se pierde y tendrías que mandar todos los links de nuevo.</div>
+        <div class="ok">Sorteo revisado automáticamente:<br>✓ Las ${names.length} personas regalan una vez<br>✓ Las ${names.length} personas reciben exactamente un regalo (nadie queda sin regalo)<br>✓ A nadie le tocó alguien de su misma casa ni sí mismo</div>
         <div id="list" style="margin-top:10px"></div>
       </div>`;
     document.getElementById('houses').disabled = true;
