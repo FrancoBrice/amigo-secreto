@@ -172,7 +172,7 @@
       <div class="reveal"><div class="reveal-card">
         <div class="gift" aria-hidden="true">🎁</div>
         <p class="hola">Hola, ${esc(d.g)}</p>
-        <p class="muted" style="font-size:19px">Este es tu Amigo Secreto. No se lo muestres a nadie.</p>
+        <p class="muted" style="font-size:19px">Este es tu Amigo Secreto.</p>
         <div class="tapbox" id="tapbox"><button class="primary" id="ver">Ver a quién me tocó</button></div>
         <div id="res" class="hidden">
           <p class="sub">Te tocó regalarle a:</p>
@@ -247,7 +247,7 @@
     const f = document.getElementById('date').value.trim();
     const base = location.href.split('#')[0];
 
-    const entries = pairs.map(([g, r]) => ({ g, text: `Hola ${g}! Este es tu link del Amigo Secreto de la familia. Ábrelo para ver a quién te tocó (es solo para ti):\n${base}#${enc({ g, r, p, f })}` }));
+    const entries = pairs.map(([g, r]) => ({ g, text: `Hola ${g}! Este es tu link del Amigo Secreto. Ábrelo para ver a quién te tocó (es solo para ti):\n${base}#${enc({ g, r, p, f })}` }));
     const saved = { entries, n: names.length, houses: document.getElementById('houses').value, sent: {} };
     store.save(saved);
     renderResults(saved);
@@ -287,6 +287,7 @@
       </div>`;
 
     const list = document.getElementById('list');
+    saved.entries.forEach(e => { e.text = e.text.replace('del Amigo Secreto de la familia.', 'del Amigo Secreto.'); });
     saved.entries.forEach(({ g, text }) => {
       const row = document.createElement('div');
       row.className = 'person';
